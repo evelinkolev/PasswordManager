@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from random import choice, randint, shuffle
 import pyperclip
+import json
 
 
 # ---------------------------- PASSWORD GENERATOR ------------------------------- #
@@ -28,21 +29,27 @@ def generate_password():
 # ---------------------------- SAVE PASSWORD ------------------------------- #
 def save():
     website = website_entry.get()
-    email_username = email_username_entry.get()
+    email = email_entry.get()
     password = password_entry.get()
+    new_data = {
+        website: {
+            "email": email,
+            "password": password,
+        }
+    }
 
     if len(website) == 0 or len(password) == 0:
         messagebox.showinfo(title="Oops", message="Please make sure you haven't left any fields empty.")
     else:
-        is_ok = messagebox.askokcancel(title=website,
-                                       message=f"These are the details entered: \nEmail: {email_username} "
-                                               f"\nPassword: {password} \nIs it ok to save?")
+        with open("data.json", "r") as data_read:
+            data = json.load(data_read)
+            data.update(new_data)
 
-        if is_ok:
-            with open("data.txt", "a") as data_file:
-                data_file.write(f"{website} | {email_username} | {password}\n")
-                website_entry.delete(0, END)
-                password_entry.delete(0, END)
+        with open("data.json", "w") as data_write:
+            json.dump(data, data_write, indent=4)
+
+            website_entry.delete(0, END)
+            password_entry.delete(0, END)
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -58,27 +65,30 @@ canvas.grid(column=1, row=0)
 website_label = Label(text="Website:")
 website_label.grid(column=0, row=1)
 
-website_entry = Entry(bg="white", width=35)
-website_entry.grid(column=1, row=1, columnspan=2, sticky="EW")
+website_entry = Entry(bg="white", width=33)
+website_entry.grid(column=1, row=1, columnspan=2, sticky="W")
 website_entry.focus()
 
-email_username_label = Label(text="Email/Username:")
-email_username_label.grid(column=0, row=2)
+email_label = Label(text="Email/Username:")
+email_label.grid(column=0, row=2)
 
-email_username_entry = Entry(bg="white", width=35)
-email_username_entry.grid(column=1, row=2, columnspan=2, sticky="EW")
-email_username_entry.insert(0, "testov@test.com")
+email_entry = Entry(bg="white", width=35)
+email_entry.grid(column=1, row=2, columnspan=2, sticky="EW")
+email_entry.insert(0, "testov@test.com")
 
 password_label = Label(text="Password:")
 password_label.grid(column=0, row=3)
 
-password_entry = Entry(bg="white")
+password_entry = Entry(bg="white", width=33)
 password_entry.grid(column=1, row=3, sticky="W")
 
-generate_password_button = Button(text="Generate Password", command=generate_password)
+generate_password_button = Button(text="Generate Password", width=20, command=generate_password)
 generate_password_button.grid(column=2, row=3, sticky="E")
 
-add_button = Button(text="Add", width=30, command=save)
+search_button = Button(text="Search", width=20)
+search_button.grid(column=2, row=1, sticky="E")
+
+add_button = Button(text="Add", command=save)
 add_button.grid(column=1, row=4, columnspan=2, sticky="EW")
 
 window.mainloop()
